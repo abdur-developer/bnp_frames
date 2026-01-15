@@ -85,7 +85,7 @@
         "params": {
             "title": "BNP Frame Maker",
             "text": "BNP নির্বাচনী ফেসবুক প্রোফাইল ফ্রেম তৈরি করুন",
-            "url": "https://bnpframes.vercel.app/"
+            "url": "https://bnpframe.vercel.app/"
         }
     }
 }
