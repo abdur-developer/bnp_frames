@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16" height="16" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>BNP Frame Maker</title>
+    <defs>
+        <linearGradient id="bnp-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#006b3f;stop-opacity:1" />
+            <stop offset="50%" style="stop-color:#004aad;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#d21034;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+    <g>
+        <!-- BNP ????? ???????? ?????? -->
+        <circle cx="8" cy="8" r="7" fill="url(#bnp-gradient)" stroke="#ffffff" stroke-width="0.5"/>
+        
+        <!-- ?????????? ????? ??????? -->
+        <path d="M5,6 L7,4 L9,5 L11,7 L10,9 L8,10 L6,9 L5,7 Z" 
+              fill="#ffffff" 
+              fill-opacity="0.9"
+              stroke="#004aad"
+              stroke-width="0.3"/>
+        
+        <!-- BNP ?????? -->
+        <text x="8" y="12" 
+              text-anchor="middle" 
+              font-family="Arial, sans-serif" 
+              font-size="4" 
+              font-weight="bold" 
+              fill="#ffffff">
+            BNP
+        </text>
+        
+        <!-- ????? ???? -->
+        <rect x="4" y="4" 
+              width="8" 
+              height="8" 
+              rx="1" 
+              fill="none" 
+              stroke="#ffd700" 
+              stroke-width="0.5" 
+              stroke-dasharray="1,1"/>
+    </g>
+</svg>

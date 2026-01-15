@@ -1,0 +1,91 @@
+{
+    "name": "BNP নির্বাচনী ফেসবুক প্রোফাইল ফ্রেম মেকার",
+    "short_name": "BNP Frame Maker",
+    "description": "বাংলাদেশ জাতীয়তাবাদী দলের নির্বাচনী প্রচারণার জন্য ফেসবুক প্রোফাইল ফ্রেম তৈরি করুন",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#004aad",
+    "theme_color": "#004aad",
+    "orientation": "portrait-primary",
+    "scope": "/",
+    "lang": "bn",
+    "dir": "ltr",
+    "categories": ["photo", "social", "utilities"],
+    "icons": [
+        {
+            "src": "/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/android-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/apple-touch-icon.png",
+            "sizes": "180x180",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/favicon-32x32.png",
+            "sizes": "32x32",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/favicon-16x16.png",
+            "sizes": "16x16",
+            "type": "image/png",
+            "purpose": "any"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "ফ্রেম তৈরি করুন",
+            "short_name": "Create",
+            "description": "নতুন BNP প্রোফাইল ফ্রেম তৈরি করুন",
+            "url": "/#create",
+            "icons": [{ "src": "/icon-96x96.png", "sizes": "96x96" }]
+        },
+        {
+            "name": "ফ্রেম গ্যালারি",
+            "short_name": "Gallery",
+            "description": "সকল BNP ফ্রেম দেখুন",
+            "url": "/#frames",
+            "icons": [{ "src": "/icon-96x96.png", "sizes": "96x96" }]
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "/screenshot-desktop.png",
+            "sizes": "1280x720",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "BNP Frame Maker ডেস্কটপ ভিউ"
+        },
+        {
+            "src": "/screenshot-mobile.png",
+            "sizes": "750x1334",
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "BNP Frame Maker মোবাইল ভিউ"
+        }
+    ],
+    "related_applications": [],
+    "prefer_related_applications": false,
+    "protocol_handlers": [],
+    "share_target": {
+        "action": "/share",
+        "method": "GET",
+        "enctype": "application/x-www-form-urlencoded",
+        "params": {
+            "title": "BNP Frame Maker",
+            "text": "BNP নির্বাচনী ফেসবুক প্রোফাইল ফ্রেম তৈরি করুন",
+            "url": "https://bnpframes.vercel.app/"
+        }
+    }
+}
