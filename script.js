@@ -1,6 +1,9 @@
-// Facebook in-app browser detection and redirect
+// Fixed Facebook in-app browser detection and redirect (No infinite loop)
 (function() {
     'use strict';
+    
+    // Session storage key for tracking redirect
+    const REDIRECT_KEY = 'fb_redirect_attempted';
     
     // Function to detect Facebook in-app browser
     function isFacebookInAppBrowser() {
@@ -27,225 +30,165 @@
         return isFacebookApp || isInstagram || isIOSWebView || isAndroidWebView;
     }
     
-    // Function to redirect to external browser
+    // Function to check if we've already attempted redirect
+    function hasRedirectAttempted() {
+        return sessionStorage.getItem(REDIRECT_KEY) === 'true';
+    }
+    
+    // Function to mark redirect as attempted
+    function markRedirectAttempted() {
+        sessionStorage.setItem(REDIRECT_KEY, 'true');
+    }
+    
+    // Function to check if we're already in external browser
+    function isInExternalBrowser() {
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        
+        // Check for Chrome, Safari, Firefox, etc.
+        const isChrome = /Chrome|CriOS/.test(userAgent) && !/Edge|Edg/.test(userAgent);
+        const isSafari = /Safari/.test(userAgent) && !/Chrome|CriOS/.test(userAgent);
+        const isFirefox = /Firefox|FxiOS/.test(userAgent);
+        const isEdge = /Edg/.test(userAgent);
+        
+        return isChrome || isSafari || isFirefox || isEdge;
+    }
+    
+    // Main redirect function with loop prevention
     function redirectToExternalBrowser() {
+        // Prevent multiple redirect attempts
+        if (hasRedirectAttempted()) {
+            console.log('Redirect already attempted in this session');
+            return;
+        }
+        
+        // Mark redirect as attempted
+        markRedirectAttempted();
+        
+        // Check if we're already in external browser (safety check)
+        if (isInExternalBrowser()) {
+            console.log('Already in external browser');
+            return;
+        }
+        
         // Get current URL
-        const currentUrl = encodeURIComponent(window.location.href);
+        const currentUrl = window.location.href;
         
-        // Create platform-specific redirect URLs
-        const redirectUrls = {
-            android: `intent://bnpframe.vercel.app/#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=https://bnpframe.vercel.app/;end;`,
-            ios: `googlechrome://bnpframe.vercel.app/`,
-            fallback: `https://bnpframe.vercel.app/`
-        };
+        // Create platform-specific URLs
+        const userAgent = navigator.userAgent;
+        const isAndroid = /Android/i.test(userAgent);
+        const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
         
-        // Create redirect page
+        let redirectUrl;
+        
+        if (isAndroid) {
+            // Android Chrome intent
+            redirectUrl = `intent://bnpframe.vercel.app/#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(currentUrl)};end;`;
+        } else if (isIOS) {
+            // iOS Chrome or Safari
+            redirectUrl = `googlechromes://bnpframe.vercel.app/`;
+        } else {
+            // Fallback to same URL
+            redirectUrl = currentUrl;
+        }
+        
+        // Create a simple redirect page
         const redirectPage = `
             <!DOCTYPE html>
             <html>
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>BNP Frame Maker - Open in Browser</title>
+                <title>Opening in Browser...</title>
+                <script>
+                    // Try redirect
+                    setTimeout(function() {
+                        window.location.href = "${redirectUrl}";
+                    }, 100);
+                    
+                    // Fallback to original site after 3 seconds
+                    setTimeout(function() {
+                        window.location.href = "${currentUrl}";
+                    }, 3000);
+                </script>
                 <style>
                     body {
-                        font-family: 'Arial', sans-serif;
-                        background: linear-gradient(135deg, #034703, #028402);
+                        font-family: Arial, sans-serif;
+                        background: #034703;
                         color: white;
-                        margin: 0;
-                        padding: 20px;
-                        min-height: 100vh;
                         display: flex;
                         justify-content: center;
                         align-items: center;
+                        height: 100vh;
+                        margin: 0;
                         text-align: center;
+                        padding: 20px;
                     }
-                    .container {
-                        max-width: 500px;
-                        background: rgba(255, 255, 255, 0.1);
-                        padding: 40px;
-                        border-radius: 20px;
-                        backdrop-filter: blur(10px);
-                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                    .content {
+                        max-width: 400px;
                     }
                     h1 {
                         color: #ffd700;
-                        margin-bottom: 20px;
-                        font-size: 28px;
                     }
-                    p {
-                        line-height: 1.6;
-                        margin-bottom: 20px;
-                        font-size: 16px;
+                    .loader {
+                        border: 5px solid #f3f3f3;
+                        border-top: 5px solid #ffd700;
+                        border-radius: 50%;
+                        width: 50px;
+                        height: 50px;
+                        animation: spin 1s linear infinite;
+                        margin: 20px auto;
                     }
-                    .btn {
-                        display: inline-block;
-                        background: #ffd700;
-                        color: #034703;
-                        padding: 15px 30px;
-                        border-radius: 50px;
-                        text-decoration: none;
-                        font-weight: bold;
-                        font-size: 18px;
-                        margin: 10px;
-                        border: 2px solid white;
-                        transition: all 0.3s;
-                        box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
-                    }
-                    .btn:hover {
-                        transform: translateY(-3px);
-                        box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
-                    }
-                    .steps {
-                        background: rgba(255, 255, 255, 0.15);
-                        padding: 20px;
-                        border-radius: 10px;
-                        margin: 25px 0;
-                        text-align: left;
-                    }
-                    .steps ol {
-                        padding-left: 20px;
-                    }
-                    .steps li {
-                        margin-bottom: 10px;
-                        padding-left: 5px;
-                    }
-                    .icon {
-                        font-size: 50px;
-                        margin-bottom: 20px;
-                        animation: bounce 2s infinite;
-                    }
-                    @keyframes bounce {
-                        0%, 100% { transform: translateY(0); }
-                        50% { transform: translateY(-10px); }
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
                     }
                 </style>
             </head>
             <body>
-                <div class="container">
-                    <div class="icon">🔓</div>
-                    <h1>Open in Browser</h1>
-                    <p>For better experience and download support, please open this website in your default browser.</p>
-                    
-                    <div class="steps">
-                        <p><strong>Follow these steps:</strong></p>
-                        <ol>
-                            <li>Tap the button below</li>
-                            <li>Select "Open in Browser" or "Chrome"</li>
-                            <li>Allow downloads in browser settings</li>
-                            <li>Enjoy full features!</li>
-                        </ol>
-                    </div>
-                    
-                    <a href="${redirectUrls.android}" class="btn" id="androidBtn">
-                        Open in Chrome Browser
-                    </a>
-                    
-                    <p style="margin-top: 20px; font-size: 14px; opacity: 0.9;">
-                        If the button doesn't work, copy this URL and paste in your browser:<br>
-                        <strong style="color: #ffd700;">bnpframe.vercel.app</strong>
-                    </p>
+                <div class="content">
+                    <div class="loader"></div>
+                    <h1>Opening in Browser...</h1>
+                    <p>Please wait while we open BNP Frame Maker in your default browser for better experience.</p>
+                    <p>If redirect doesn't work, please manually open:</p>
+                    <p><strong>bnpframe.vercel.app</strong></p>
+                    <p>in Chrome or Safari browser.</p>
                 </div>
-                
-                <script>
-                    // Auto-detect platform and redirect
-                    const userAgent = navigator.userAgent;
-                    const isAndroid = /Android/i.test(userAgent);
-                    const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
-                    
-                    if (isAndroid) {
-                        // Try Android intent first
-                        setTimeout(() => {
-                            window.location = '${redirectUrls.android}';
-                        }, 100);
-                        
-                        // Fallback after 2 seconds
-                        setTimeout(() => {
-                            window.location = '${redirectUrls.fallback}';
-                        }, 2000);
-                    } else if (isIOS) {
-                        // Try Chrome for iOS
-                        setTimeout(() => {
-                            window.location = '${redirectUrls.ios}';
-                        }, 100);
-                        
-                        // Fallback to Safari
-                        setTimeout(() => {
-                            window.location = '${redirectUrls.fallback}';
-                        }, 2000);
-                    }
-                    
-                    // Button click handlers
-                    document.getElementById('androidBtn').addEventListener('click', function(e) {
-                        if (isAndroid) {
-                            window.location = '${redirectUrls.android}';
-                        } else if (isIOS) {
-                            window.location = '${redirectUrls.ios}';
-                        } else {
-                            window.location = '${redirectUrls.fallback}';
-                        }
-                    });
-                </script>
             </body>
             </html>
         `;
         
-        // Replace current page with redirect page
+        // Replace current page
         document.open();
         document.write(redirectPage);
         document.close();
     }
     
-    // Check if in Facebook in-app browser on page load
-    if (isFacebookInAppBrowser()) {
-        // Add a small delay to ensure page loads
-        setTimeout(redirectToExternalBrowser, 500);
-    }
-    
-    // Also check on page visibility change (if user switches back to Facebook)
-    document.addEventListener('visibilitychange', function() {
-        if (!document.hidden && isFacebookInAppBrowser()) {
-            redirectToExternalBrowser();
-        }
-    });
-    
-    // Make function available globally for manual trigger
-    window.redirectToBrowser = redirectToExternalBrowser;
-    
-    // Add a button in your app to manually trigger redirect
-    function addManualRedirectButton() {
-        const button = document.createElement('button');
-        button.innerHTML = '🔓 Open in Browser';
-        button.style.cssText = `
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #ffd700;
-            color: #034703;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 25px;
-            font-weight: bold;
-            cursor: pointer;
-            z-index: 9999;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            font-size: 14px;
-            display: none;
-        `;
-        
-        button.onclick = redirectToExternalBrowser;
-        document.body.appendChild(button);
-        
-        // Show button only in Facebook browser
-        if (isFacebookInAppBrowser()) {
-            button.style.display = 'block';
+    // Check conditions and redirect only once
+    function checkAndRedirect() {
+        // Only redirect if:
+        // 1. We're in Facebook browser
+        // 2. Haven't attempted redirect yet
+        // 3. Not already in external browser
+        if (isFacebookInAppBrowser() && !hasRedirectAttempted() && !isInExternalBrowser()) {
+            console.log('Facebook browser detected, redirecting...');
+            
+            // Small delay to ensure page loads
+            setTimeout(redirectToExternalBrowser, 1000);
+        } else {
+            console.log('No redirect needed or already redirected');
         }
     }
     
-    // Add manual redirect button after page loads
-    window.addEventListener('load', function() {
-        setTimeout(addManualRedirectButton, 1000);
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', function() {
+        checkAndRedirect();
     });
+    
+    // Clean session storage on normal browser (for testing)
+    if (!isFacebookInAppBrowser() || isInExternalBrowser()) {
+        sessionStorage.removeItem(REDIRECT_KEY);
+    }
+    
 })();
 
 // Application Configuration
