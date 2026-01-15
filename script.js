@@ -1,196 +1,71 @@
-// Fixed Facebook in-app browser detection and redirect (No infinite loop)
+// Real Solution - Show message to user
 (function() {
-    'use strict';
     
-    // Session storage key for tracking redirect
-    const REDIRECT_KEY = 'fb_redirect_attempted';
-    
-    // Function to detect Facebook in-app browser
-    function isFacebookInAppBrowser() {
-        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-        
-        // Check for Facebook in-app browser indicators
-        const isFacebookApp = /FBAN|FBAV|FB_IAB|FB4A/i.test(userAgent);
-        const isInstagram = /Instagram/i.test(userAgent);
-        
-        // Check for iOS webview (Facebook uses UIWebView/WKWebView)
-        const isIOSWebView = /iPhone|iPad|iPod/.test(userAgent) && 
-                             /AppleWebKit/.test(userAgent) && 
-                             !/Safari/.test(userAgent) &&
-                             !/CriOS/.test(userAgent) && 
-                             !/FxiOS/.test(userAgent);
-        
-        // Check for Android webview (Facebook uses WebView)
-        const isAndroidWebView = /Android/.test(userAgent) && 
-                                 /AppleWebKit/.test(userAgent) && 
-                                 !/Chrome/.test(userAgent) &&
-                                 !/Firefox/.test(userAgent) &&
-                                 !/SamsungBrowser/.test(userAgent);
-        
-        return isFacebookApp || isInstagram || isIOSWebView || isAndroidWebView;
+    // Check if Facebook browser
+    function isFacebookBrowser() {
+        const ua = navigator.userAgent;
+        return ua.includes('FBAN') || ua.includes('FBAV') || ua.includes('Instagram');
     }
     
-    // Function to check if we've already attempted redirect
-    function hasRedirectAttempted() {
-        return sessionStorage.getItem(REDIRECT_KEY) === 'true';
-    }
-    
-    // Function to mark redirect as attempted
-    function markRedirectAttempted() {
-        sessionStorage.setItem(REDIRECT_KEY, 'true');
-    }
-    
-    // Function to check if we're already in external browser
-    function isInExternalBrowser() {
-        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    // Show popup if in Facebook browser
+    if (isFacebookBrowser()) {
         
-        // Check for Chrome, Safari, Firefox, etc.
-        const isChrome = /Chrome|CriOS/.test(userAgent) && !/Edge|Edg/.test(userAgent);
-        const isSafari = /Safari/.test(userAgent) && !/Chrome|CriOS/.test(userAgent);
-        const isFirefox = /Firefox|FxiOS/.test(userAgent);
-        const isEdge = /Edg/.test(userAgent);
-        
-        return isChrome || isSafari || isFirefox || isEdge;
-    }
-    
-    // Main redirect function with loop prevention
-    function redirectToExternalBrowser() {
-        // Prevent multiple redirect attempts
-        if (hasRedirectAttempted()) {
-            console.log('Redirect already attempted in this session');
-            return;
-        }
-        
-        // Mark redirect as attempted
-        markRedirectAttempted();
-        
-        // Check if we're already in external browser (safety check)
-        if (isInExternalBrowser()) {
-            console.log('Already in external browser');
-            return;
-        }
-        
-        // Get current URL
-        const currentUrl = window.location.href;
-        
-        // Create platform-specific URLs
-        const userAgent = navigator.userAgent;
-        const isAndroid = /Android/i.test(userAgent);
-        const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
-        
-        let redirectUrl;
-        
-        if (isAndroid) {
-            // Android Chrome intent
-            redirectUrl = `intent://bnpframe.vercel.app/#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(currentUrl)};end;`;
-        } else if (isIOS) {
-            // iOS Chrome or Safari
-            redirectUrl = `googlechromes://bnpframe.vercel.app/`;
-        } else {
-            // Fallback to same URL
-            redirectUrl = currentUrl;
-        }
-        
-        // Create a simple redirect page
-        const redirectPage = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Opening in Browser...</title>
-                <script>
-                    // Try redirect
-                    setTimeout(function() {
-                        window.location.href = "${redirectUrl}";
-                    }, 100);
-                    
-                    // Fallback to original site after 3 seconds
-                    setTimeout(function() {
-                        window.location.href = "${currentUrl}";
-                    }, 3000);
-                </script>
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
+        // Create popup
+        const popup = document.createElement('div');
+        popup.innerHTML = `
+            <div style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                z-index: 9999;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 20px;
+            ">
+                <div style="
+                    background: white;
+                    padding: 30px;
+                    border-radius: 15px;
+                    max-width: 400px;
+                    text-align: center;
+                ">
+                    <h2 style="color: #034703; margin-bottom: 20px;">
+                        ⚠️ Open in Chrome/Safari
+                    </h2>
+                    <p style="margin-bottom: 20px;">
+                        ডাউনলোড feature ব্যবহার করতে Chrome বা Safari browser এ ওপেন করুন।
+                    </p>
+                    <p style="background: #fff9e6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <strong>কিভাবে করবেন:</strong><br>
+                        1. উপরের ⋯ তিন ডট এ ক্লিক করুন<br>
+                        2. "Open in Browser" সিলেক্ট করুন<br>
+                        3. Chrome/Safari select করুন
+                    </p>
+                    <button onclick="this.parentElement.parentElement.remove()" style="
                         background: #034703;
                         color: white;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        height: 100vh;
-                        margin: 0;
-                        text-align: center;
-                        padding: 20px;
-                    }
-                    .content {
-                        max-width: 400px;
-                    }
-                    h1 {
-                        color: #ffd700;
-                    }
-                    .loader {
-                        border: 5px solid #f3f3f3;
-                        border-top: 5px solid #ffd700;
-                        border-radius: 50%;
-                        width: 50px;
-                        height: 50px;
-                        animation: spin 1s linear infinite;
-                        margin: 20px auto;
-                    }
-                    @keyframes spin {
-                        0% { transform: rotate(0deg); }
-                        100% { transform: rotate(360deg); }
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="content">
-                    <div class="loader"></div>
-                    <h1>Opening in Browser...</h1>
-                    <p>Please wait while we open BNP Frame Maker in your default browser for better experience.</p>
-                    <p>If redirect doesn't work, please manually open:</p>
-                    <p><strong>bnpframe.vercel.app</strong></p>
-                    <p>in Chrome or Safari browser.</p>
+                        border: none;
+                        padding: 12px 30px;
+                        border-radius: 8px;
+                        font-size: 16px;
+                        cursor: pointer;
+                    ">
+                        OK, বুঝেছি
+                    </button>
                 </div>
-            </body>
-            </html>
+            </div>
         `;
         
-        // Replace current page
-        document.open();
-        document.write(redirectPage);
-        document.close();
-    }
-    
-    // Check conditions and redirect only once
-    function checkAndRedirect() {
-        // Only redirect if:
-        // 1. We're in Facebook browser
-        // 2. Haven't attempted redirect yet
-        // 3. Not already in external browser
-        if (isFacebookInAppBrowser() && !hasRedirectAttempted() && !isInExternalBrowser()) {
-            console.log('Facebook browser detected, redirecting...');
-            
-            // Small delay to ensure page loads
-            setTimeout(redirectToExternalBrowser, 1000);
-        } else {
-            console.log('No redirect needed or already redirected');
-        }
-    }
-    
-    // Initialize on page load
-    window.addEventListener('DOMContentLoaded', function() {
-        checkAndRedirect();
-    });
-    
-    // Clean session storage on normal browser (for testing)
-    if (!isFacebookInAppBrowser() || isInExternalBrowser()) {
-        sessionStorage.removeItem(REDIRECT_KEY);
+        // Add to page
+        document.body.appendChild(popup);
+        
     }
     
 })();
-
 // Application Configuration
 const CONFIG = {
     canvasSize: 2048, // HD Quality
