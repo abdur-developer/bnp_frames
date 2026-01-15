@@ -1,68 +1,172 @@
-// Real Solution - Show message to user
+// Facebook Browser Redirect with Manual Button
 (function() {
+    'use strict';
     
-    // Check if Facebook browser
+    // Redirect URLs
+    const redirectUrls = {
+        android: 'intent://bnpframe.vercel.app/#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=https://bnpframe.vercel.app/;end;',
+        ios: 'googlechrome://bnpframe.vercel.app/',
+        fallback: 'https://bnpframe.vercel.app/'
+    };
+    
+    // Detect Facebook browser
     function isFacebookBrowser() {
         const ua = navigator.userAgent;
-        return ua.includes('FBAN') || ua.includes('FBAV') || ua.includes('Instagram');
+        return ua.includes('FBAN') || 
+               ua.includes('FBAV') || 
+               ua.includes('Instagram') ||
+               (ua.includes('iPhone') && ua.includes('AppleWebKit') && !ua.includes('Safari'));
     }
     
-    // Show popup if in Facebook browser
-    if (isFacebookBrowser()) {
+    // Detect platform
+    function getPlatform() {
+        const ua = navigator.userAgent.toLowerCase();
+        if (ua.includes('android')) return 'android';
+        if (ua.includes('iphone') || ua.includes('ipad')) return 'ios';
+        return 'other';
+    }
+    
+    // Get redirect URL based on platform
+    function getRedirectUrl() {
+        const platform = getPlatform();
         
-        // Create popup
-        const popup = document.createElement('div');
-        popup.innerHTML = `
+        if (platform === 'android') {
+            return redirectUrls.android;
+        } else if (platform === 'ios') {
+            return redirectUrls.ios;
+        } else {
+            return redirectUrls.fallback;
+        }
+    }
+    
+    // Create popup
+    function createPopup() {
+        const platform = getPlatform();
+        const redirectUrl = getRedirectUrl();
+        
+        const popupHTML = `
             <div style="
                 position: fixed;
                 top: 0;
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: rgba(0,0,0,0.8);
-                z-index: 9999;
+                background: rgba(0, 0, 0, 0.9);
+                z-index: 999999;
                 display: flex;
                 justify-content: center;
                 align-items: center;
                 padding: 20px;
+                font-family: Arial, sans-serif;
             ">
                 <div style="
-                    background: white;
+                    background: linear-gradient(135deg, #034703, #028402);
+                    color: white;
                     padding: 30px;
-                    border-radius: 15px;
+                    border-radius: 20px;
                     max-width: 400px;
+                    width: 100%;
                     text-align: center;
+                    border: 3px solid #ffd700;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
                 ">
-                    <h2 style="color: #034703; margin-bottom: 20px;">
-                        ⚠️ Open in Chrome/Safari
+                    <div style="font-size: 50px; margin-bottom: 15px;">🔓</div>
+                    
+                    <h2 style="margin: 0 0 15px 0; color: #ffd700;">
+                        Open in Chrome/Safari
                     </h2>
-                    <p style="margin-bottom: 20px;">
-                        ডাউনলোড feature ব্যবহার করতে Chrome বা Safari browser এ ওপেন করুন।
+                    
+                    <p style="margin-bottom: 20px; line-height: 1.5;">
+                        For full features including download, please open in Chrome or Safari browser.
                     </p>
-                    <p style="background: #fff9e6; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                        <strong>কিভাবে করবেন:</strong><br>
-                        1. উপরের ⋯ তিন ডট এ ক্লিক করুন<br>
-                        2. "Open in Browser" সিলেক্ট করুন<br>
-                        3. Chrome/Safari select করুন
-                    </p>
-                    <button onclick="this.parentElement.parentElement.remove()" style="
-                        background: #034703;
-                        color: white;
-                        border: none;
-                        padding: 12px 30px;
-                        border-radius: 8px;
-                        font-size: 16px;
-                        cursor: pointer;
+                    
+                    <div style="
+                        background: rgba(255, 255, 255, 0.1);
+                        padding: 15px;
+                        border-radius: 10px;
+                        margin-bottom: 20px;
+                        text-align: left;
                     ">
-                        OK, বুঝেছি
+                        <p style="margin: 5px 0; color: #ffd700;">
+                            📱 ${platform === 'android' ? 'Android' : 'iPhone'} Instructions:
+                        </p>
+                        <p style="margin: 5px 0; font-size: 14px;">
+                            1. Tap "Open in Browser" button below<br>
+                            2. Select "Chrome" or "Safari"<br>
+                            3. Enjoy all features!
+                        </p>
+                    </div>
+                    
+                    <button id="openBrowserBtn" style="
+                        background: #ffd700;
+                        color: #034703;
+                        border: none;
+                        padding: 15px 30px;
+                        border-radius: 50px;
+                        font-size: 16px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        width: 100%;
+                        margin-bottom: 10px;
+                        transition: all 0.3s;
+                    ">
+                        🚀 Open in Browser
                     </button>
+                    
+                    <button onclick="this.closest('div[style*=\"position: fixed\"]').remove()" style="
+                        background: transparent;
+                        color: white;
+                        border: 1px solid rgba(255,255,255,0.3);
+                        padding: 10px 20px;
+                        border-radius: 50px;
+                        font-size: 14px;
+                        cursor: pointer;
+                        width: 100%;
+                        transition: all 0.3s;
+                    ">
+                        Later
+                    </button>
+                    
+                    <p style="font-size: 12px; margin-top: 15px; opacity: 0.8;">
+                        If button doesn't work, manually open:<br>
+                        <strong>bnpframe.vercel.app</strong><br>
+                        in your browser
+                    </p>
                 </div>
             </div>
         `;
         
-        // Add to page
+        const popup = document.createElement('div');
+        popup.innerHTML = popupHTML;
         document.body.appendChild(popup);
         
+        // Add click handler to button
+        setTimeout(() => {
+            const button = document.getElementById('openBrowserBtn');
+            if (button) {
+                button.addEventListener('click', function() {
+                    console.log('Redirecting to:', redirectUrl);
+                    window.location.href = redirectUrl;
+                    
+                    // Fallback after 2 seconds
+                    setTimeout(() => {
+                        if (!document.hidden) {
+                            window.location.href = redirectUrls.fallback;
+                        }
+                    }, 2000);
+                });
+            }
+        }, 100);
+    }
+    
+    // Check and show popup
+    if (isFacebookBrowser()) {
+        // Show after page loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', createPopup);
+        } else {
+            setTimeout(createPopup, 1000);
+        }
     }
     
 })();
