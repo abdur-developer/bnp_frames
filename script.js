@@ -45,77 +45,36 @@
         const redirectUrl = getRedirectUrl();
         
         const popupHTML = `
-            <div style="
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.9);
-                z-index: 999999;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                padding: 20px;
-                font-family: Arial, sans-serif;
-            ">
-                <div style="
-                    background: linear-gradient(135deg, #034703, #028402);
-                    color: white;
-                    padding: 30px;
-                    border-radius: 20px;
-                    max-width: 400px;
-                    width: 100%;
-                    text-align: center;
-                    border: 3px solid #ffd700;
-                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-                ">
+            <div style=" position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); z-index: 999999; display: flex; justify-content: center; align-items: center; padding: 20px; font-family: Arial, sans-serif;">
+                <div style="background: linear-gradient(135deg, #034703, #028402); color: white; padding: 30px; border-radius: 20px; max-width: 400px; width: 100%; text-align: center; border: 3px solid #ffd700; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);">
                     <div style="font-size: 50px; margin-bottom: 15px;">🔓</div>
                     
                     <h2 style="margin: 0 0 15px 0; color: #ffd700;">
-                        Open in Chrome/Safari
+                        Chrome/Safari তে খুলুন
                     </h2>
                     
                     <p style="margin-bottom: 20px; line-height: 1.5;">
-                        For full features including download, please open in Chrome or Safari browser.
+                        ডাউনলোড সহ সম্পূর্ণ বৈশিষ্ট্যের জন্য, অনুগ্রহ করে Chrome অথবা Safari ব্রাউজারে খুলুন।
                     </p>
                     
-                    <div style="
-                        background: rgba(255, 255, 255, 0.1);
-                        padding: 15px;
-                        border-radius: 10px;
-                        margin-bottom: 20px;
-                        text-align: left;
-                    ">
+                    <div style="background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: left;">
                         <p style="margin: 5px 0; color: #ffd700;">
-                            📱 ${platform === 'android' ? 'Android' : 'iPhone'} Instructions:
+                            📱 ${platform === 'android' ? 'Android' : 'iPhone'} নির্দেশনা:
                         </p>
                         <p style="margin: 5px 0; font-size: 14px;">
-                            1. Tap "Open in Browser" button below<br>
-                            2. Select "Chrome" or "Safari"<br>
-                            3. Enjoy all features!
+                            ১. নীচের "ব্রাউজারে খুলুন" বোতামে ট্যাপ করুন<br>
+                            ২. "Chrome" অথবা "Safari" নির্বাচন করুন<br>
+                            ৩. সমস্ত বৈশিষ্ট্য উপভোগ করুন!
                         </p>
                     </div>
                     
-                    <button id="openBrowserBtn" style="
-                        background: #ffd700;
-                        color: #034703;
-                        border: none;
-                        padding: 15px 30px;
-                        border-radius: 50px;
-                        font-size: 16px;
-                        font-weight: bold;
-                        cursor: pointer;
-                        width: 100%;
-                        margin-bottom: 10px;
-                        transition: all 0.3s;
-                    ">
-                        🚀 Open in Browser
+                    <button id="openBrowserBtn" style="background: #ffd700; color: #034703; border: none; padding: 15px 30px; border-radius: 50px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 10px; transition: all 0.3s;">
+                        🚀 ব্রাউজারে খুলুন
                     </button>                    
                     <p style="font-size: 12px; margin-top: 15px; opacity: 0.8;">
-                        If button doesn't work, manually open:<br>
+                        যদি বোতামটি কাজ না করে, তাহলে ম্যানুয়ালি খুলুন:<br>
                         <strong>bnpframe.vercel.app</strong><br>
-                        in your browser
+                        আপনার ব্রাউজারে
                     </p>
                 </div>
             </div>
