@@ -1,3 +1,253 @@
+// Facebook in-app browser detection and redirect
+(function() {
+    'use strict';
+    
+    // Function to detect Facebook in-app browser
+    function isFacebookInAppBrowser() {
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        
+        // Check for Facebook in-app browser indicators
+        const isFacebookApp = /FBAN|FBAV|FB_IAB|FB4A/i.test(userAgent);
+        const isInstagram = /Instagram/i.test(userAgent);
+        
+        // Check for iOS webview (Facebook uses UIWebView/WKWebView)
+        const isIOSWebView = /iPhone|iPad|iPod/.test(userAgent) && 
+                             /AppleWebKit/.test(userAgent) && 
+                             !/Safari/.test(userAgent) &&
+                             !/CriOS/.test(userAgent) && 
+                             !/FxiOS/.test(userAgent);
+        
+        // Check for Android webview (Facebook uses WebView)
+        const isAndroidWebView = /Android/.test(userAgent) && 
+                                 /AppleWebKit/.test(userAgent) && 
+                                 !/Chrome/.test(userAgent) &&
+                                 !/Firefox/.test(userAgent) &&
+                                 !/SamsungBrowser/.test(userAgent);
+        
+        return isFacebookApp || isInstagram || isIOSWebView || isAndroidWebView;
+    }
+    
+    // Function to redirect to external browser
+    function redirectToExternalBrowser() {
+        // Get current URL
+        const currentUrl = encodeURIComponent(window.location.href);
+        
+        // Create platform-specific redirect URLs
+        const redirectUrls = {
+            android: `intent://bnpframe.vercel.app/#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=https://bnpframe.vercel.app/;end;`,
+            ios: `googlechrome://bnpframe.vercel.app/`,
+            fallback: `https://bnpframe.vercel.app/`
+        };
+        
+        // Create redirect page
+        const redirectPage = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>BNP Frame Maker - Open in Browser</title>
+                <style>
+                    body {
+                        font-family: 'Arial', sans-serif;
+                        background: linear-gradient(135deg, #034703, #028402);
+                        color: white;
+                        margin: 0;
+                        padding: 20px;
+                        min-height: 100vh;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        text-align: center;
+                    }
+                    .container {
+                        max-width: 500px;
+                        background: rgba(255, 255, 255, 0.1);
+                        padding: 40px;
+                        border-radius: 20px;
+                        backdrop-filter: blur(10px);
+                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                    }
+                    h1 {
+                        color: #ffd700;
+                        margin-bottom: 20px;
+                        font-size: 28px;
+                    }
+                    p {
+                        line-height: 1.6;
+                        margin-bottom: 20px;
+                        font-size: 16px;
+                    }
+                    .btn {
+                        display: inline-block;
+                        background: #ffd700;
+                        color: #034703;
+                        padding: 15px 30px;
+                        border-radius: 50px;
+                        text-decoration: none;
+                        font-weight: bold;
+                        font-size: 18px;
+                        margin: 10px;
+                        border: 2px solid white;
+                        transition: all 0.3s;
+                        box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+                    }
+                    .btn:hover {
+                        transform: translateY(-3px);
+                        box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
+                    }
+                    .steps {
+                        background: rgba(255, 255, 255, 0.15);
+                        padding: 20px;
+                        border-radius: 10px;
+                        margin: 25px 0;
+                        text-align: left;
+                    }
+                    .steps ol {
+                        padding-left: 20px;
+                    }
+                    .steps li {
+                        margin-bottom: 10px;
+                        padding-left: 5px;
+                    }
+                    .icon {
+                        font-size: 50px;
+                        margin-bottom: 20px;
+                        animation: bounce 2s infinite;
+                    }
+                    @keyframes bounce {
+                        0%, 100% { transform: translateY(0); }
+                        50% { transform: translateY(-10px); }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="icon">🔓</div>
+                    <h1>Open in Browser</h1>
+                    <p>For better experience and download support, please open this website in your default browser.</p>
+                    
+                    <div class="steps">
+                        <p><strong>Follow these steps:</strong></p>
+                        <ol>
+                            <li>Tap the button below</li>
+                            <li>Select "Open in Browser" or "Chrome"</li>
+                            <li>Allow downloads in browser settings</li>
+                            <li>Enjoy full features!</li>
+                        </ol>
+                    </div>
+                    
+                    <a href="${redirectUrls.android}" class="btn" id="androidBtn">
+                        Open in Chrome Browser
+                    </a>
+                    
+                    <p style="margin-top: 20px; font-size: 14px; opacity: 0.9;">
+                        If the button doesn't work, copy this URL and paste in your browser:<br>
+                        <strong style="color: #ffd700;">bnpframe.vercel.app</strong>
+                    </p>
+                </div>
+                
+                <script>
+                    // Auto-detect platform and redirect
+                    const userAgent = navigator.userAgent;
+                    const isAndroid = /Android/i.test(userAgent);
+                    const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
+                    
+                    if (isAndroid) {
+                        // Try Android intent first
+                        setTimeout(() => {
+                            window.location = '${redirectUrls.android}';
+                        }, 100);
+                        
+                        // Fallback after 2 seconds
+                        setTimeout(() => {
+                            window.location = '${redirectUrls.fallback}';
+                        }, 2000);
+                    } else if (isIOS) {
+                        // Try Chrome for iOS
+                        setTimeout(() => {
+                            window.location = '${redirectUrls.ios}';
+                        }, 100);
+                        
+                        // Fallback to Safari
+                        setTimeout(() => {
+                            window.location = '${redirectUrls.fallback}';
+                        }, 2000);
+                    }
+                    
+                    // Button click handlers
+                    document.getElementById('androidBtn').addEventListener('click', function(e) {
+                        if (isAndroid) {
+                            window.location = '${redirectUrls.android}';
+                        } else if (isIOS) {
+                            window.location = '${redirectUrls.ios}';
+                        } else {
+                            window.location = '${redirectUrls.fallback}';
+                        }
+                    });
+                </script>
+            </body>
+            </html>
+        `;
+        
+        // Replace current page with redirect page
+        document.open();
+        document.write(redirectPage);
+        document.close();
+    }
+    
+    // Check if in Facebook in-app browser on page load
+    if (isFacebookInAppBrowser()) {
+        // Add a small delay to ensure page loads
+        setTimeout(redirectToExternalBrowser, 500);
+    }
+    
+    // Also check on page visibility change (if user switches back to Facebook)
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden && isFacebookInAppBrowser()) {
+            redirectToExternalBrowser();
+        }
+    });
+    
+    // Make function available globally for manual trigger
+    window.redirectToBrowser = redirectToExternalBrowser;
+    
+    // Add a button in your app to manually trigger redirect
+    function addManualRedirectButton() {
+        const button = document.createElement('button');
+        button.innerHTML = '🔓 Open in Browser';
+        button.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #ffd700;
+            color: #034703;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 9999;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-size: 14px;
+            display: none;
+        `;
+        
+        button.onclick = redirectToExternalBrowser;
+        document.body.appendChild(button);
+        
+        // Show button only in Facebook browser
+        if (isFacebookInAppBrowser()) {
+            button.style.display = 'block';
+        }
+    }
+    
+    // Add manual redirect button after page loads
+    window.addEventListener('load', function() {
+        setTimeout(addManualRedirectButton, 1000);
+    });
+})();
+
 // Application Configuration
 const CONFIG = {
     canvasSize: 2048, // HD Quality
@@ -334,7 +584,7 @@ function selectFrame(frame) {
     showToast(`ফ্রেম সিলেক্ট করা হয়েছে`, 'success');
 }
 
-// Handle download - Facebook compatible with local download
+// Handle download
 async function handleDownload() {
     if (!state.isImageLoaded) {
         showToast('প্রথমে একটি ছবি আপলোড করুন।', 'error');
@@ -360,210 +610,26 @@ async function handleDownload() {
         // Draw frame overlay
         await drawFrameOnCanvas(ctx);
         
-        // Try multiple download methods for Facebook compatibility
-        downloadImage(canvas);
+        // Convert to blob and download
+        canvas.toBlob(blob => {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.download = `bnp_abdur09266@gmail.com_${Math.floor(1000 + Math.random() * 9000)}.png`;
+            link.href = url;
+            link.click();
+            
+            // Cleanup
+            URL.revokeObjectURL(url);
+            
+            hideLoading();
+            showToast('HD ছবি ডাউনলোড শুরু হয়েছে!', 'success');
+        }, 'image/png', 1.0);
         
     } catch (error) {
         console.error('Download error:', error);
         hideLoading();
         showToast('ডাউনলোড করতে সমস্যা হয়েছে।', 'error');
     }
-}
-
-// Download image with multiple fallback methods
-function downloadImage(canvas) {
-    // Generate filename
-    const filename = `bnp_frame_${Date.now()}.png`;
-    
-    // Method 1: Try standard download first
-    try {
-        canvas.toBlob(blob => {
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.download = filename;
-            link.href = url;
-            link.style.display = 'none';
-            
-            document.body.appendChild(link);
-            link.click();
-            
-            // Cleanup
-            setTimeout(() => {
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-            }, 100);
-            
-            // Check if download was successful (Facebook blocks it)
-            setTimeout(() => {
-                // If still in loading state after 2 seconds, try alternative method
-                if (document.querySelector('.loading')) {
-                    hideLoading();
-                    tryMethod2(canvas, filename);
-                } else {
-                    hideLoading();
-                    showToast('ছবি ডাউনলোড শুরু হয়েছে!', 'success');
-                }
-            }, 2000);
-            
-        }, 'image/png', 1.0);
-    } catch (error) {
-        hideLoading();
-        tryMethod2(canvas, filename);
-    }
-}
-
-// Alternative method for Facebook in-app browser
-function tryMethod2(canvas, filename) {
-    // Method 2: Create download button with data URL
-    const dataURL = canvas.toDataURL('image/png', 1.0);
-    
-    // Create visible download button
-    const downloadBtn = document.createElement('a');
-    downloadBtn.href = dataURL;
-    downloadBtn.download = filename;
-    downloadBtn.innerHTML = `
-        <div style="
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #034703;
-            color: white;
-            padding: 20px 30px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-size: 18px;
-            font-weight: bold;
-            z-index: 9999;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-            border: 2px solid #ffd700;
-            animation: pulse 2s infinite;
-        ">
-            📥 ছবি ডাউনলোড করতে এখানে ক্লিক করুন
-        </div>
-        <style>
-            @keyframes pulse {
-                0% { transform: translate(-50%, -50%) scale(1); }
-                50% { transform: translate(-50%, -50%) scale(1.05); }
-                100% { transform: translate(-50%, -50%) scale(1); }
-            }
-        </style>
-    `;
-    
-    downloadBtn.onclick = (e) => {
-        // Try to trigger download
-        setTimeout(() => {
-            // If still visible after click, show instructions
-            if (document.body.contains(downloadBtn)) {
-                downloadBtn.remove();
-                tryMethod3(dataURL, filename);
-            }
-        }, 1000);
-        
-        return true;
-    };
-    
-    document.body.appendChild(downloadBtn);
-    
-    // Auto remove after 30 seconds
-    setTimeout(() => {
-        if (document.body.contains(downloadBtn)) {
-            downloadBtn.remove();
-            hideLoading();
-            showToast('ডাউনলোড বাটনে ক্লিক করুন', 'info');
-        }
-    }, 30000);
-}
-
-// Final fallback method
-function tryMethod3(dataURL, filename) {
-    // Open in new tab with instructions
-    const newTab = window.open();
-    newTab.document.write(`
-        <html>
-        <head>
-            <title>Download BNP Frame</title>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    background: linear-gradient(135deg, #034703, #028402);
-                    color: white;
-                    margin: 0;
-                    padding: 20px;
-                    text-align: center;
-                    min-height: 100vh;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    align-items: center;
-                }
-                .container {
-                    max-width: 600px;
-                    background: rgba(255,255,255,0.1);
-                    padding: 30px;
-                    border-radius: 15px;
-                    backdrop-filter: blur(10px);
-                }
-                .instructions {
-                    background: white;
-                    color: #333;
-                    padding: 20px;
-                    border-radius: 10px;
-                    margin: 20px 0;
-                    text-align: left;
-                }
-                img {
-                    max-width: 80%;
-                    border: 5px solid white;
-                    border-radius: 10px;
-                    margin: 20px 0;
-                }
-                .btn {
-                    display: inline-block;
-                    background: #ffd700;
-                    color: #034703;
-                    padding: 15px 30px;
-                    border-radius: 8px;
-                    text-decoration: none;
-                    font-weight: bold;
-                    margin: 10px;
-                    border: 2px solid white;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <h1>📸 আপনার BNP ফ্রেম তৈরি হয়েছে!</h1>
-                <p>ছবিটি সেভ করার জন্য নিচের যেকোনো একটি উপায় ব্যবহার করুন:</p>
-                
-                <div class="instructions">
-                    <p><strong>📱 সরাসরি ডাউনলোড:</strong></p>
-                    <a href="${dataURL}" download="${filename}" class="btn">
-                        ডাউনলোড করুন
-                    </a>
-                    
-                    <p style="margin-top: 30px;"><strong>📱 মোবাইলে সেভ করার নিয়ম:</strong></p>
-                    <p><strong>Android:</strong></p>
-                    <p>1. উপরের বাটনে লং প্রেস করুন</p>
-                    <p>2. "Download link" সিলেক্ট করুন</p>
-                    
-                    <p><strong>iPhone:</strong></p>
-                    <p>1. ছবিতে লং প্রেস করুন</p>
-                    <p>2. "Save to Photos" সিলেক্ট করুন</p>
-                </div>
-                
-                <img src="${dataURL}" alt="BNP Frame" />
-                
-                <p style="color: #ffd700; margin-top: 20px;">
-                    যদি ডাউনলোড না হয়, Chrome বা Safari ব্রাউজারে ওয়েবসাইটটি ওপেন করুন।
-                </p>
-            </div>
-        </body>
-        </html>
-    `);
-    
-    hideLoading();
-    showToast('নতুন ট্যাবে ছবি ওপেন হয়েছে।', 'info');
 }
 
 // Draw user image on canvas with transformations
