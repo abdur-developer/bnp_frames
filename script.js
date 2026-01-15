@@ -111,22 +111,7 @@
                         transition: all 0.3s;
                     ">
                         🚀 Open in Browser
-                    </button>
-                    
-                    <button onclick="this.closest('div[style*=\"position: fixed\"]').remove()" style="
-                        background: transparent;
-                        color: white;
-                        border: 1px solid rgba(255,255,255,0.3);
-                        padding: 10px 20px;
-                        border-radius: 50px;
-                        font-size: 14px;
-                        cursor: pointer;
-                        width: 100%;
-                        transition: all 0.3s;
-                    ">
-                        Later
-                    </button>
-                    
+                    </button>                    
                     <p style="font-size: 12px; margin-top: 15px; opacity: 0.8;">
                         If button doesn't work, manually open:<br>
                         <strong>bnpframe.vercel.app</strong><br>
