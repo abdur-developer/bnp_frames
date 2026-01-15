@@ -6,6 +6,18 @@ const CONFIG = {
     allowedTypes: ['image/jpeg', 'image/png', 'image/webp'],
     frames: [
         {
+            id: 11,
+            file: '11.png'
+        },
+        {
+            id: 10,
+            file: '10.png'
+        },
+        {
+            id: 9,
+            file: '9.png'
+        },
+        {
             id: 1,
             file: '1.png'
         },
