@@ -334,7 +334,7 @@ function selectFrame(frame) {
     showToast(`ফ্রেম সিলেক্ট করা হয়েছে`, 'success');
 }
 
-// Handle download
+// Handle download - Facebook compatible with local download
 async function handleDownload() {
     if (!state.isImageLoaded) {
         showToast('প্রথমে একটি ছবি আপলোড করুন।', 'error');
@@ -360,26 +360,210 @@ async function handleDownload() {
         // Draw frame overlay
         await drawFrameOnCanvas(ctx);
         
-        // Convert to blob and download
-        canvas.toBlob(blob => {
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.download = `bnp_abdur09266@gmail.com_${Math.floor(1000 + Math.random() * 9000)}.png`;
-            link.href = url;
-            link.click();
-            
-            // Cleanup
-            URL.revokeObjectURL(url);
-            
-            hideLoading();
-            showToast('HD ছবি ডাউনলোড শুরু হয়েছে!', 'success');
-        }, 'image/png', 1.0);
+        // Try multiple download methods for Facebook compatibility
+        downloadImage(canvas);
         
     } catch (error) {
         console.error('Download error:', error);
         hideLoading();
         showToast('ডাউনলোড করতে সমস্যা হয়েছে।', 'error');
     }
+}
+
+// Download image with multiple fallback methods
+function downloadImage(canvas) {
+    // Generate filename
+    const filename = `bnp_frame_${Date.now()}.png`;
+    
+    // Method 1: Try standard download first
+    try {
+        canvas.toBlob(blob => {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = url;
+            link.style.display = 'none';
+            
+            document.body.appendChild(link);
+            link.click();
+            
+            // Cleanup
+            setTimeout(() => {
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }, 100);
+            
+            // Check if download was successful (Facebook blocks it)
+            setTimeout(() => {
+                // If still in loading state after 2 seconds, try alternative method
+                if (document.querySelector('.loading')) {
+                    hideLoading();
+                    tryMethod2(canvas, filename);
+                } else {
+                    hideLoading();
+                    showToast('ছবি ডাউনলোড শুরু হয়েছে!', 'success');
+                }
+            }, 2000);
+            
+        }, 'image/png', 1.0);
+    } catch (error) {
+        hideLoading();
+        tryMethod2(canvas, filename);
+    }
+}
+
+// Alternative method for Facebook in-app browser
+function tryMethod2(canvas, filename) {
+    // Method 2: Create download button with data URL
+    const dataURL = canvas.toDataURL('image/png', 1.0);
+    
+    // Create visible download button
+    const downloadBtn = document.createElement('a');
+    downloadBtn.href = dataURL;
+    downloadBtn.download = filename;
+    downloadBtn.innerHTML = `
+        <div style="
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #034703;
+            color: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 9999;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            border: 2px solid #ffd700;
+            animation: pulse 2s infinite;
+        ">
+            📥 ছবি ডাউনলোড করতে এখানে ক্লিক করুন
+        </div>
+        <style>
+            @keyframes pulse {
+                0% { transform: translate(-50%, -50%) scale(1); }
+                50% { transform: translate(-50%, -50%) scale(1.05); }
+                100% { transform: translate(-50%, -50%) scale(1); }
+            }
+        </style>
+    `;
+    
+    downloadBtn.onclick = (e) => {
+        // Try to trigger download
+        setTimeout(() => {
+            // If still visible after click, show instructions
+            if (document.body.contains(downloadBtn)) {
+                downloadBtn.remove();
+                tryMethod3(dataURL, filename);
+            }
+        }, 1000);
+        
+        return true;
+    };
+    
+    document.body.appendChild(downloadBtn);
+    
+    // Auto remove after 30 seconds
+    setTimeout(() => {
+        if (document.body.contains(downloadBtn)) {
+            downloadBtn.remove();
+            hideLoading();
+            showToast('ডাউনলোড বাটনে ক্লিক করুন', 'info');
+        }
+    }, 30000);
+}
+
+// Final fallback method
+function tryMethod3(dataURL, filename) {
+    // Open in new tab with instructions
+    const newTab = window.open();
+    newTab.document.write(`
+        <html>
+        <head>
+            <title>Download BNP Frame</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    background: linear-gradient(135deg, #034703, #028402);
+                    color: white;
+                    margin: 0;
+                    padding: 20px;
+                    text-align: center;
+                    min-height: 100vh;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                }
+                .container {
+                    max-width: 600px;
+                    background: rgba(255,255,255,0.1);
+                    padding: 30px;
+                    border-radius: 15px;
+                    backdrop-filter: blur(10px);
+                }
+                .instructions {
+                    background: white;
+                    color: #333;
+                    padding: 20px;
+                    border-radius: 10px;
+                    margin: 20px 0;
+                    text-align: left;
+                }
+                img {
+                    max-width: 80%;
+                    border: 5px solid white;
+                    border-radius: 10px;
+                    margin: 20px 0;
+                }
+                .btn {
+                    display: inline-block;
+                    background: #ffd700;
+                    color: #034703;
+                    padding: 15px 30px;
+                    border-radius: 8px;
+                    text-decoration: none;
+                    font-weight: bold;
+                    margin: 10px;
+                    border: 2px solid white;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>📸 আপনার BNP ফ্রেম তৈরি হয়েছে!</h1>
+                <p>ছবিটি সেভ করার জন্য নিচের যেকোনো একটি উপায় ব্যবহার করুন:</p>
+                
+                <div class="instructions">
+                    <p><strong>📱 সরাসরি ডাউনলোড:</strong></p>
+                    <a href="${dataURL}" download="${filename}" class="btn">
+                        ডাউনলোড করুন
+                    </a>
+                    
+                    <p style="margin-top: 30px;"><strong>📱 মোবাইলে সেভ করার নিয়ম:</strong></p>
+                    <p><strong>Android:</strong></p>
+                    <p>1. উপরের বাটনে লং প্রেস করুন</p>
+                    <p>2. "Download link" সিলেক্ট করুন</p>
+                    
+                    <p><strong>iPhone:</strong></p>
+                    <p>1. ছবিতে লং প্রেস করুন</p>
+                    <p>2. "Save to Photos" সিলেক্ট করুন</p>
+                </div>
+                
+                <img src="${dataURL}" alt="BNP Frame" />
+                
+                <p style="color: #ffd700; margin-top: 20px;">
+                    যদি ডাউনলোড না হয়, Chrome বা Safari ব্রাউজারে ওয়েবসাইটটি ওপেন করুন।
+                </p>
+            </div>
+        </body>
+        </html>
+    `);
+    
+    hideLoading();
+    showToast('নতুন ট্যাবে ছবি ওপেন হয়েছে।', 'info');
 }
 
 // Draw user image on canvas with transformations
