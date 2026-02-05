@@ -164,6 +164,46 @@ const CONFIG = {
         {
             id: 8,
             file: '8.png'
+        },
+        {
+            id: 9,
+            file: 'profile1.png'
+        },
+        {
+            id: 10,
+            file: 'profile2.png'
+        },
+        {
+            id: 11,
+            file: 'profile3.png'
+        },
+        {
+            id: 12,
+            file: 'profile4.png'
+        },
+        {
+            id: 13,
+            file: 'profile5.png'
+        },
+        {
+            id: 14,
+            file: 'profile6.png'
+        },
+        {
+            id: 15,
+            file: 'profile7.png'
+        },
+        {
+            id: 16,
+            file: 'profile8.png'
+        },
+        {
+            id: 17,
+            file: 'profile9.png'
+        },
+        {
+            id: 18,
+            file: 'profile10.png'
         }
     ]
 };
