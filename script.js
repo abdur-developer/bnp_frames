@@ -121,50 +121,38 @@ const CONFIG = {
     maxFileSize: 5 * 1024 * 1024, // 5MB
     allowedTypes: ['image/jpeg', 'image/png', 'image/webp'],
     frames: [
-        {
-            id: 11,
-            file: '11.png'
-        },
-        {
-            id: 10,
-            file: '10.png'
-        },
-        {
-            id: 9,
-            file: '9.png'
-        },
-        {
-            id: 1,
-            file: '1.png'
-        },
-        {
-            id: 2,
-            file: '2.png'
-        },
-        {
-            id: 3,
-            file: '3.png'
-        },
-        {
-            id: 4,
-            file: '4.png'
-        },
-        {
-            id: 5,
-            file: '5.png'
-        },
-        {
-            id: 6,
-            file: '6.png'
-        },
-        {
-            id: 7,
-            file: '7.png'
-        },
-        {
-            id: 8,
-            file: '8.png'
-        },
+        // {
+        //     id: 1,
+        //     file: '1.png'
+        // },
+        // {
+        //     id: 2,
+        //     file: '2.png'
+        // },
+        // {
+        //     id: 3,
+        //     file: '3.png'
+        // },
+        // {
+        //     id: 4,
+        //     file: '4.png'
+        // },
+        // {
+        //     id: 5,
+        //     file: '5.png'
+        // },
+        // {
+        //     id: 6,
+        //     file: '6.png'
+        // },
+        // {
+        //     id: 7,
+        //     file: '7.png'
+        // },
+        // {
+        //     id: 8,
+        //     file: '8.png'
+        // },
         {
             id: 9,
             file: 'profile1.png'
@@ -204,6 +192,18 @@ const CONFIG = {
         {
             id: 18,
             file: 'profile10.png'
+        },        
+        {
+            id: 19,
+            file: '11.png'
+        },
+        {
+            id: 20,
+            file: '10.png'
+        },
+        {
+            id: 21,
+            file: '9.png'
         }
     ]
 };
