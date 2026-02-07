@@ -170,6 +170,10 @@ const CONFIG = {
             file: 'profile4.png'
         },
         {
+            id:33,
+            file: 'f1.png'
+        },
+        {
             id: 13,
             file: 'profile5.png'
         },
